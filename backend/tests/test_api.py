@@ -14,14 +14,15 @@ def client(tmp_path, monkeypatch):
         yield test_client
 
 
-def test_health_and_demo(client):
+def test_health_and_course_catalog(client):
     assert client.get("/api/health").json()["ai_configured"] is False
     courses = client.get("/api/courses").json()
     assert len(courses) == 1
-    assert len(courses[0]["lectures"]) == 1
+    assert len(courses[0]["lectures"]) == 14
     detail = client.get("/api/lectures/1").json()
     assert len(detail["questions"]) == 10
     assert "answer" not in detail["questions"][0]
+    assert detail["questions"][0]["source_excerpt"].startswith("lecture1-")
     assert detail["progress"]["overall"] is None
 
 
@@ -131,3 +132,43 @@ def test_pdf_extraction_has_page_references(client):
     extracted = client.get(f"/api/sources/{uploaded.json()['id']}").json()['content']
     assert '[Page 1]' in extracted
     assert 'sys.argv' in extracted
+
+
+def test_source_titles_and_misnumbered_lecture_files(client):
+    lectures = client.get("/api/courses").json()[0]["lectures"]
+    titles = [x["title"] for x in lectures]
+    assert titles[0].startswith("Lecture 1")
+    assert "Lecture 7 — Object-oriented programming" in titles
+    assert titles.count("Lecture 9 — Magic methods") == 1
+    assert titles.count("Lecture 9 — GUI with wxPython") == 1
+    assert "lecture6-english.pdf" in next(x["description"] for x in lectures if "Object-oriented" in x["title"])
+    assert len([x for x in lectures if x["progress"]["stages"]["theory"]["total"] == 2]) == 3
+
+def test_grounded_question_bank_and_empty_future_lessons(client):
+    lectures = client.get("/api/courses").json()[0]["lectures"]
+    for item in lectures[:3]:
+        detail = client.get(f"/api/lectures/{item['id']}").json()
+        assert len(detail['questions']) == 10
+        assert all(q['source_excerpt'] for q in detail['questions'] if q['stage'] != 'revision')
+    for item in lectures[3:]:
+        detail = client.get(f"/api/lectures/{item['id']}").json()
+        assert detail['questions'] == []
+
+
+def test_bulk_pdf_import_matches_catalog(tmp_path, client):
+    import fitz
+    from scripts.import_lecture_pdfs import import_directory
+    folder = tmp_path / 'private_materials'
+    folder.mkdir()
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((40, 60), 'Indexing a list uses zero-based positions and slices. ' * 3)
+    (folder / 'lecture2-english-2020.pdf').write_bytes(doc.tobytes())
+    doc.close()
+    result = import_directory(folder)
+    assert result['imported'] == ['lecture2-english-2020.pdf']
+    assert len(result['missing']) == 13
+    assert import_directory(folder)['already_present'] == ['lecture2-english-2020.pdf']
+    detail = client.get('/api/lectures/2').json()
+    assert len(detail['sources']) == 1
+    assert all(q['source_id'] == detail['sources'][0]['id'] for q in detail['questions'])

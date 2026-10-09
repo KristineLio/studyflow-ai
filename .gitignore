@@ -22,3 +22,9 @@ dist/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Professor's materials / private student documents
+private_materials/
+course_materials/
+*.pdf
+*.docx

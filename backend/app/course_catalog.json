@@ -1,0 +1,549 @@
+{
+  "course": {
+    "name": "Python Programming",
+    "code": "NETB508",
+    "description": "Lecture-grounded study course from Filip Andonov’s Python slides; source PDFs are not distributed in this repository."
+  },
+  "lectures": [
+    {
+      "title": "Lecture 1 — Introduction to Python",
+      "source_file": "lecture1-english-2020.pdf",
+      "topics": [
+        "Python interpreter",
+        "variables",
+        "operators",
+        "built-in functions",
+        "modules",
+        "strings and input",
+        "blocks and conditionals",
+        "truthiness"
+      ],
+      "questions": [
+        {
+          "stage": "theory",
+          "prompt": "Explain the difference between / and // for positive integers in Python 3.",
+          "answer": "The / operator performs true division and returns a float; // performs floor division. For instance, 4/3 is about 1.333 while 4//3 is 1.",
+          "explanation": "Use the two division examples in the introductory slides.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture1-english-2020.pdf · page 15"
+        },
+        {
+          "stage": "theory",
+          "prompt": "Why must numeric text returned by input() often be converted before arithmetic?",
+          "answer": "input() returns a string. Convert it with int() or float() before treating it as a number.",
+          "explanation": "The lecture illustrates int(input(...)) for arithmetic input.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture1-english-2020.pdf · page 35"
+        },
+        {
+          "stage": "tests",
+          "prompt": "What is the value of 2 ** 3?",
+          "answer": "B",
+          "explanation": "The exponentiation operator is **.",
+          "choices": [
+            "A. 6",
+            "B. 8",
+            "C. 9",
+            "D. 5"
+          ],
+          "difficulty": 2,
+          "source_reference": "lecture1-english-2020.pdf · page 20"
+        },
+        {
+          "stage": "tests",
+          "prompt": "Which value is false in a Python conditional?",
+          "answer": "C",
+          "explanation": "The lecture lists empty sequences and zero among false values.",
+          "choices": [
+            "A. [1]",
+            "B. \"hello\"",
+            "C. []",
+            "D. 5"
+          ],
+          "difficulty": 2,
+          "source_reference": "lecture1-english-2020.pdf · page 43"
+        },
+        {
+          "stage": "code",
+          "prompt": "Write a Python program that asks for a person’s name, then prints a personalized greeting on the next line.",
+          "answer": "Use name = input(...), then print(...) including the name. There is no need for numeric conversion.",
+          "explanation": "Inspired by the first programming task in the lecture. Review your code without running it unless a runner is configured.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture1-english-2020.pdf · page 48"
+        },
+        {
+          "stage": "code",
+          "prompt": "Write Python code that asks for two numbers and prints their sum.",
+          "answer": "Convert input strings to int or float before adding them; print the arithmetic sum.",
+          "explanation": "The input conversion examples appear in the lecture.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture1-english-2020.pdf · page 35"
+        },
+        {
+          "stage": "problems",
+          "prompt": "Given x = 3, predict the result of x * 2 and explain the role of assignment.",
+          "answer": "6. The assignment binds x to 3; the multiplication produces 6.",
+          "explanation": "The same structure is illustrated in the Variables section.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture1-english-2020.pdf · page 19"
+        },
+        {
+          "stage": "problems",
+          "prompt": "Why does the expression 0 or 7 evaluate to 7? Explain using truthiness.",
+          "answer": "Python or returns its first truthy operand, otherwise it returns its final operand; 0 is false, so it returns 7.",
+          "explanation": "Slides describe false values and the behavior of or.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture1-english-2020.pdf · page 43"
+        },
+        {
+          "stage": "revision",
+          "prompt": "What is the operator for exponentiation in Python?",
+          "answer": "A",
+          "explanation": "** raises the left operand to a power.",
+          "choices": [
+            "A. **",
+            "B. ^",
+            "C. //",
+            "D. %%"
+          ],
+          "difficulty": 2,
+          "source_reference": "lecture1-english-2020.pdf · page 20"
+        },
+        {
+          "stage": "revision",
+          "prompt": "What is the value of bool(\"\")?",
+          "answer": "B",
+          "explanation": "An empty string is false.",
+          "choices": [
+            "A. True",
+            "B. False",
+            "C. None",
+            "D. Raises TypeError"
+          ],
+          "difficulty": 2,
+          "source_reference": "lecture1-english-2020.pdf · page 43"
+        }
+      ],
+      "subtitle": "",
+      "source_heading": "Lecture 1 — Introduction to Python"
+    },
+    {
+      "title": "Lecture 2 — Lists and Tuples",
+      "source_file": "lecture2-english-2020.pdf",
+      "topics": [
+        "sequences",
+        "indexing",
+        "slicing",
+        "list methods",
+        "copy versus alias",
+        "tuples",
+        "loops",
+        "homework tasks"
+      ],
+      "questions": [
+        {
+          "stage": "theory",
+          "prompt": "Explain the key mutability difference between lists and tuples.",
+          "answer": "Lists are mutable; tuples are immutable. You can reassign individual elements in lists, but not tuple elements.",
+          "explanation": "The lecture introduces this distinction on slide 3.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture2-english-2020.pdf · page 3"
+        },
+        {
+          "stage": "theory",
+          "prompt": "Why does b = a not produce an independent copy of list a?",
+          "answer": "Both variables reference the same list object. Changes made through a can be observed through b; a[:] creates a shallow copy.",
+          "explanation": "Compare the aliasing and copying examples on slide 31.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture2-english-2020.pdf · page 31"
+        },
+        {
+          "stage": "tests",
+          "prompt": "What does [1, 2, 3, 4][-1] evaluate to?",
+          "answer": "D",
+          "explanation": "Negative indexing starts from the last element.",
+          "choices": [
+            "A. 1",
+            "B. -1",
+            "C. 3",
+            "D. 4"
+          ],
+          "difficulty": 2,
+          "source_reference": "lecture2-english-2020.pdf · page 9"
+        },
+        {
+          "stage": "tests",
+          "prompt": "What is the result of [10,20,30,40][1:3]?",
+          "answer": "B",
+          "explanation": "A slice includes the start index and excludes the stop index.",
+          "choices": [
+            "A. [10,20,30]",
+            "B. [20,30]",
+            "C. [20,30,40]",
+            "D. [10,20]"
+          ],
+          "difficulty": 2,
+          "source_reference": "lecture2-english-2020.pdf · page 12"
+        },
+        {
+          "stage": "code",
+          "prompt": "Implement the lecture’s sorted-list homework task: given values from command-line arguments, print exactly sorted if they are in non-decreasing order, otherwise unsorted. Do not use input().",
+          "answer": "Use sys.argv[1:] and compare neighbors; equal adjacent elements are allowed. For numeric input convert strings before comparing. Print exactly the required output. The assignment’s expected type rules must be checked for mixed inputs.",
+          "explanation": "Professor exercise slide 75; command-line I/O requirements additionally supplied in homework.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture2-english-2020.pdf · page 75"
+        },
+        {
+          "stage": "code",
+          "prompt": "Implement the lecture’s anagram homework task for two phrases (e.g., rocket boys and october sky). Use command-line arguments rather than input().",
+          "answer": "Normalize case and remove spaces, then compare sorted characters or Counter values. Use sys.argv to get both phrases; quotation in the shell preserves spaces. Match punctuation rules to the full assignment.",
+          "explanation": "Professor exercise slide 76 and user-supplied command-line requirement.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture2-english-2020.pdf · page 76"
+        },
+        {
+          "stage": "problems",
+          "prompt": "Given a = [1,2,3], b = a, and a.append(4), what is b and why?",
+          "answer": "[1,2,3,4]. Both variable names refer to the same list.",
+          "explanation": "This corresponds to the aliasing example in slide 31.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture2-english-2020.pdf · page 31"
+        },
+        {
+          "stage": "problems",
+          "prompt": "How could you remove repeated values from a list for the homework task while preserving first-seen order?",
+          "answer": "Use a seen set and append only unseen elements to a result list. If the assignment requires sorted output, sort the unique results at the end.",
+          "explanation": "Adapt the deduplication task from slide 78; note that the slide’s sample output is sorted.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture2-english-2020.pdf · page 78"
+        },
+        {
+          "stage": "revision",
+          "prompt": "Which method extends a list in place?",
+          "answer": "C",
+          "explanation": "extend mutates the original list, unlike concatenation producing a new list.",
+          "choices": [
+            "A. sorted",
+            "B. join",
+            "C. extend",
+            "D. copy"
+          ],
+          "difficulty": 2,
+          "source_reference": "lecture2-english-2020.pdf · page 35"
+        },
+        {
+          "stage": "revision",
+          "prompt": "What does the expression (1,2,3)[-1] return?",
+          "answer": "A",
+          "explanation": "Negative index -1 accesses the last item for sequences.",
+          "choices": [
+            "A. 3",
+            "B. 1",
+            "C. -1",
+            "D. TypeError"
+          ],
+          "difficulty": 2,
+          "source_reference": "lecture2-english-2020.pdf · page 9"
+        }
+      ],
+      "subtitle": "",
+      "source_heading": "Lecture 2 — Lists and Tuples"
+    },
+    {
+      "title": "Lecture 3 — Strings",
+      "source_file": "lecture3-english-2021.pdf",
+      "topics": [
+        "string literals",
+        "immutability",
+        "formatting",
+        "string methods",
+        "comparison",
+        "membership",
+        "ord and chr",
+        "Caesar cipher",
+        "Vigenère cipher"
+      ],
+      "questions": [
+        {
+          "stage": "theory",
+          "prompt": "Why is assigning to text[0] invalid when text is a Python string?",
+          "answer": "Strings are immutable; you cannot replace a character in place. Construct a new string instead.",
+          "explanation": "The lecture demonstrates the invalid slice assignment.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture3-english-2021.pdf · page 4"
+        },
+        {
+          "stage": "theory",
+          "prompt": "Compare str.find(substring) and the in operator.",
+          "answer": "find returns the index of the first match or -1. The in operator tests membership and returns a boolean.",
+          "explanation": "The lecture reviews searching and membership.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture3-english-2021.pdf · page 17"
+        },
+        {
+          "stage": "tests",
+          "prompt": "What does \"study\".find(\"z\") return?",
+          "answer": "C",
+          "explanation": "find returns -1 if the substring is missing.",
+          "choices": [
+            "A. 0",
+            "B. None",
+            "C. -1",
+            "D. False"
+          ],
+          "difficulty": 2,
+          "source_reference": "lecture3-english-2021.pdf · page 17"
+        },
+        {
+          "stage": "tests",
+          "prompt": "What does \"ABC\".isupper() return?",
+          "answer": "A",
+          "explanation": "isupper() returns True when all cased characters are uppercase and at least one such character exists.",
+          "choices": [
+            "A. True",
+            "B. False",
+            "C. \"ABC\"",
+            "D. TypeError"
+          ],
+          "difficulty": 2,
+          "source_reference": "lecture3-english-2021.pdf · page 23"
+        },
+        {
+          "stage": "code",
+          "prompt": "Implement a function caesar(text, shift) that shifts English A–Z letters by the given key, preserves case, and leaves nonletters unchanged.",
+          "answer": "A valid implementation maps each Latin letter to an index 0..25, shifts modulo 26, reconstructs the character with chr/ord, and preserves nonalphabet characters.",
+          "explanation": "Derived from the Caesar cipher implementation task.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture3-english-2021.pdf · page 54"
+        },
+        {
+          "stage": "code",
+          "prompt": "Write a function that removes punctuation from a string without changing the order of remaining characters.",
+          "answer": "One approach is using str.translate with str.maketrans and string.punctuation, or comprehension filtering. Decide explicitly how Unicode punctuation should be handled.",
+          "explanation": "The example removes punctuation using translate.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture3-english-2021.pdf · page 31"
+        },
+        {
+          "stage": "problems",
+          "prompt": "Why can title.find(\"viagra\") fail when title contains mixed-case ViAgRa, and how can you fix that?",
+          "answer": "find is case-sensitive. Compare normalized versions, such as title.lower().find(\"viagra\").",
+          "explanation": "The lecture demonstrates case normalization before searching.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture3-english-2021.pdf · page 25"
+        },
+        {
+          "stage": "problems",
+          "prompt": "Explain how chr(65) and ord(\"A\") relate.",
+          "answer": "ord(\"A\") returns the integer character code 65; chr(65) returns the corresponding character \"A\".",
+          "explanation": "These two functions are discussed in the ASCII section.",
+          "choices": [],
+          "difficulty": 2,
+          "source_reference": "lecture3-english-2021.pdf · page 34"
+        },
+        {
+          "stage": "revision",
+          "prompt": "What does \"Python\".find(\"xyz\") return?",
+          "answer": "B",
+          "explanation": "No match means -1.",
+          "choices": [
+            "A. 0",
+            "B. -1",
+            "C. None",
+            "D. True"
+          ],
+          "difficulty": 2,
+          "source_reference": "lecture3-english-2021.pdf · page 17"
+        },
+        {
+          "stage": "revision",
+          "prompt": "Which function converts a Unicode code point to its corresponding character?",
+          "answer": "D",
+          "explanation": "chr maps an integer code point to a character.",
+          "choices": [
+            "A. ord",
+            "B. find",
+            "C. str.lower",
+            "D. chr"
+          ],
+          "difficulty": 2,
+          "source_reference": "lecture3-english-2021.pdf · page 34"
+        }
+      ],
+      "subtitle": "",
+      "source_heading": "Lecture 3 — Strings"
+    },
+    {
+      "title": "Lecture 4 — Dictionaries",
+      "source_file": "lecture4-english-2021.pdf",
+      "topics": [
+        "key-value pairs",
+        "constructing dictionaries",
+        "lookup",
+        "methods"
+      ],
+      "questions": [],
+      "subtitle": "Question set coming next.",
+      "source_heading": "Lecture 4 — Dictionaries"
+    },
+    {
+      "title": "Lecture 5 — Abstraction",
+      "source_file": "lecture5-english-2020.pdf",
+      "topics": [
+        "functions",
+        "parameters and arguments",
+        "scope",
+        "recursion",
+        "lambda"
+      ],
+      "questions": [],
+      "subtitle": "Question set coming next.",
+      "source_heading": "Lecture 5 — Abstraction"
+    },
+    {
+      "title": "Lecture 7 — Object-oriented programming",
+      "source_file": "lecture6-english.pdf",
+      "topics": [
+        "polymorphism",
+        "encapsulation",
+        "classes",
+        "__init__",
+        "class namespace",
+        "inheritance",
+        "interfaces"
+      ],
+      "questions": [],
+      "subtitle": "The file is named lecture6, but the slide title says Lecture 7.",
+      "source_heading": "Lecture 7 — Object-oriented programming"
+    },
+    {
+      "title": "Lecture 9 — Magic methods",
+      "source_file": "lecture7-english-2019.pdf",
+      "topics": [
+        "multiple inheritance",
+        "method overriding",
+        "super",
+        "protocols",
+        "properties",
+        "iterators",
+        "generators"
+      ],
+      "questions": [],
+      "subtitle": "The file is named lecture7, but the slide title says Lecture 9.",
+      "source_heading": "Lecture 9 — Magic methods"
+    },
+    {
+      "title": "Exceptions and Tests",
+      "source_file": "lecture8-english-2020.pdf",
+      "topics": [
+        "built-in and custom exceptions",
+        "try/except/else/finally",
+        "exception propagation",
+        "unit tests"
+      ],
+      "questions": [],
+      "subtitle": "The cover has no lecture number.",
+      "source_heading": "Exceptions and Tests"
+    },
+    {
+      "title": "Lecture 9 — GUI with wxPython",
+      "source_file": "lecture9-english.pdf",
+      "topics": [
+        "wxPython",
+        "widgets",
+        "wx.Frame",
+        "containers",
+        "layouts",
+        "events"
+      ],
+      "questions": [],
+      "subtitle": "The cover says Lecture 9, which also appears on the Magic Methods PDF.",
+      "source_heading": "Lecture 9 — GUI with wxPython"
+    },
+    {
+      "title": "Lecture 10 — Working with Files",
+      "source_file": "lecture10-english.pdf",
+      "topics": [
+        "opening files",
+        "read/readline/readlines",
+        "iteration",
+        "writing",
+        "closing"
+      ],
+      "questions": [],
+      "subtitle": "Question set coming next.",
+      "source_heading": "Lecture 10 — Working with Files"
+    },
+    {
+      "title": "Lecture 11 — Working with Databases",
+      "source_file": "lecture11-english-2020.pdf",
+      "topics": [
+        "DB-API",
+        "database connections",
+        "SQLite",
+        "cursors",
+        "SQL queries"
+      ],
+      "questions": [],
+      "subtitle": "Question set coming next.",
+      "source_heading": "Lecture 11 — Working with Databases"
+    },
+    {
+      "title": "Working with Internet",
+      "source_file": "lecture12-english-2021.pdf",
+      "topics": [
+        "urllib",
+        "sockets",
+        "socketserver",
+        "email"
+      ],
+      "questions": [],
+      "subtitle": "The cover has no lecture number.",
+      "source_heading": "Working with Internet"
+    },
+    {
+      "title": "Working with Images and Graphics",
+      "source_file": "graphics and images-english-2021.pdf",
+      "topics": [
+        "Pillow",
+        "image loading",
+        "cropping",
+        "saving",
+        "image operations"
+      ],
+      "questions": [],
+      "subtitle": "Additional course material.",
+      "source_heading": "Working with Images and Graphics"
+    },
+    {
+      "title": "Web Apps with Python and Flask",
+      "source_file": "flask-2021.pdf",
+      "topics": [
+        "Flask basics",
+        "routing",
+        "templates",
+        "forms"
+      ],
+      "questions": [],
+      "subtitle": "Additional course material.",
+      "source_heading": "Web Apps with Python and Flask"
+    }
+  ]
+}

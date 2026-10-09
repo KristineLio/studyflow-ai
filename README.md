@@ -5,7 +5,8 @@
 ## What works in V1
 
 - Course and lecture creation, with the **Python Programming** pilot course.
-- Ten clearly labeled **sample questions** inspired by two user-provided Python homework topics: `sys.argv` / sorted lists and anagrams. Sample content is **not** claimed to come from the professor's lecture PDFs.
+- A **14-entry Python Programming lecture catalog** mapped to the actual titles and filenames in Professor Filip Andonov's supplied PDFs. The filenames do not always match the slide numbers; StudyFlow preserves the cover titles.
+- **30 original lecture-grounded practice questions** across the first three lectures (10 per lecture), with exact PDF filename and page references. The other 11 entries are available for later uploads and question generation.
 - **Theory → Tests → Code → Problems → Revision** study flow.
 - Objective multiple-choice grading; **transparent self-assessment** for written answers when no AI model is connected.
 - Optional OpenAI-compatible API for **question generation, AI hints, and rubric-based answer review**. API credentials stay in the backend, not the frontend.
@@ -20,7 +21,7 @@
 - The app **does not include an AI subscription or API key**. Without credentials, AI generation and AI grading are disabled; manual practice works.
 - PDF text extraction is best-effort. Image-only/scanned PDFs need OCR before uploading; review extracted Python code, diagrams and tables against the PDF.
 - The SQLite backend has **no authentication or user isolation**. Run it locally; **do not publish the API publicly** or upload private course materials to an unauthenticated instance.
-- Source references are validated against exact extracted text, but AI-generated questions may still be incorrect. Review them before exam use.
+- For auto-generated questions (as opposed to the 30 manually curated ones), source excerpts are validated against the extracted text, but AI-generated questions may still be incorrect. Review them before exam use.
 
 ## Start locally
 
@@ -75,7 +76,33 @@ Restart the API. The API uses the OpenAI-compatible `/chat/completions` endpoint
 5. Take the final **Revision** without hints or intermediate answer reveals.
 6. Review your overall score (only then), reattempt weak topics, and check scheduled revision due dates via `/api/revision-due`.
 
-To test the app before uploading anything, use the seeded **L01 · Strings & command-line arguments** demo lecture.
+To test the app before uploading anything, open **Lecture 1 — Introduction to Python**, **Lecture 2 — Lists and Tuples**, or **Lecture 3 — Strings**. These include original practice questions grounded in the supplied PDFs; the PDFs themselves are intentionally not checked into GitHub.
+
+## Import the original lecture PDFs locally (optional)
+
+The public GitHub repository contains **references and an original practice bank**, not the copyrighted professor PDFs.
+
+Place your copies of the PDFs in a private folder. Keep the original filenames (such as `lecture2-english-2020.pdf`), then run from the backend directory:
+
+```bash
+python -m scripts.import_lecture_pdfs --directory /path/to/private_materials
+```
+
+On Windows PowerShell, an example is:
+
+```powershell
+python -m scripts.import_lecture_pdfs --directory "C:\Users\YourUser\Downloads\python-lectures"
+```
+
+The importer matches all 14 PDF filenames to their corresponding lecture entries, extracts readable text, stores it in the local SQLite database, and does not import duplicates on subsequent runs. Missing files are reported without inventing content. You may also use the web UI's per-lecture upload instead.
+
+**Important:** Some older slides contain Python 2 examples, while the application and assignment starter are designed for Python 3. Confirm version-specific syntax against your current course requirements. Copying the PDF files into your public GitHub repository is not required or recommended.
+
+## Source-backed content map
+
+- **Ready for five-stage practice:** Lecture 1 (Introduction), Lecture 2 (Lists and Tuples), Lecture 3 (Strings).
+- **Cataloged for next integration:** Dictionaries; Abstraction; Object-oriented programming; Magic methods; Exceptions and tests; wxPython GUI; Files; Databases; Internet; Graphics; Flask.
+- Source cover titles are authoritative: `lecture6-english.pdf` says **Lecture 7**; `lecture7-english-2019.pdf` says **Lecture 9**; `lecture9-english.pdf` also says **Lecture 9**. We deliberately preserve these labels rather than inventing missing lecture numbers.
 
 ## API quick reference
 
