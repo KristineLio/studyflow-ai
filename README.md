@@ -12,7 +12,8 @@
 - Optional OpenAI-compatible API for **question generation, AI hints, and rubric-based answer review**. API credentials stay in the backend, not the frontend.
 - Real **PDF / DOCX / TXT text extraction** and source preview, stored in SQLite. Generated questions require an AI connection and must cite a literal excerpt of uploaded content.
 - Progress (/10 per stage), most recent attempt tracking and an **SM-2-inspired review scheduler**.
-- **No final overall score** until every stage is graded and the final revision is completed unaided. Revision is locked until the first four stages are complete; revision questions hide feedback, answers, and excerpts until the final question is submitted.
+- **No final overall score** until every stage is graded and the final revision is completed unaided. Revision is locked until the first four stages are complete; revision questions hide feedback, answers, and excerpts until the final question is submitted. Revision answers are **one attempt only**; after completion their individual results can be reviewed across page reloads.
+- **Resumable self-assessment:** reopening a pending written answer restores its rubric and grading controls instead of forcing a second submission; completed stages support review and explicit retries.
 - Responsive dashboard and study workspace.
 
 ### Honesty about what V1 does *not* do
@@ -137,6 +138,8 @@ For frontend type checking and production bundle (after npm install):
 cd frontend
 npm run build
 ```
+
+For step-by-step verification of the first lecture, see [`QA_LECTURE1.md`](./QA_LECTURE1.md). GitHub Actions also runs backend tests and frontend build checks on pushes and pull requests.
 
 ## Skycastle VibeFlow showcase
 

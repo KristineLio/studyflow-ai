@@ -30,6 +30,7 @@ export default function App() {
   const [hint, setHint] = useState('');
   const [hintCount, setHintCount] = useState(0);
   const [review, setReview] = useState<AttemptResult | null>(null);
+  const [retrying, setRetrying] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -71,6 +72,13 @@ export default function App() {
   const answered = detail?.questions.filter(item => currentAttempts[item.id]?.score !== null && currentAttempts[item.id]?.score !== undefined).length || 0;
   const percent = detail && detail.questions.length ? Math.round(answered / detail.questions.length * 100) : 0;
   const questionPrevious = q ? currentAttempts[q.id] : undefined;
+  const savedPending = q ? detail?.pending_reviews[q.id] : undefined;
+  const displayedReview = review ?? (savedPending ? {...savedPending, progress: detail!.progress} : null);
+  const completedRevisionResult = q ? detail?.revision_results[q.id] : undefined;
+  const alreadySubmitted = Boolean(questionPrevious);
+  const completedPractice = stage !== 'revision' && questionPrevious !== undefined && questionPrevious.score !== null;
+  const canContinue = !!q && (review?.score !== null && review !== null ||
+    (alreadySubmitted && (stage === 'revision' || questionPrevious?.score !== null)));
   const allStagesBeforeRevision = STAGES.slice(0, 4).every(s => detail?.progress.stages[s].complete);
   const revisionBlocked = stage === 'revision' && !allStagesBeforeRevision;
   const revisionComplete = !!detail?.progress.stages.revision.complete;
@@ -79,8 +87,16 @@ export default function App() {
     setActiveCourseId(courseId); setActiveLectureId(lectureId); setView('overview'); setError('');setNotice('');
     setSidebarOpen(false); setQuestionIndex(0); resetQuestion();
   }
-  function resetQuestion() { setAnswer(''); setHint(''); setHintCount(0); setReview(null); }
-  function startStage(s: Stage) { setStage(s); setQuestionIndex(0); resetQuestion(); setView('study'); setSidebarOpen(false); }
+  function resetQuestion() { setAnswer(''); setHint(''); setHintCount(0); setReview(null); setRetrying(false); }
+  function startStage(s: Stage) {
+    const questions = (detail?.questions || []).filter(item => item.stage === s);
+    const next = questions.findIndex(item => {
+      const previous = currentAttempts[item.id];
+      return !previous || (s !== 'revision' && previous.score === null);
+    });
+    setStage(s); setQuestionIndex(next >= 0 ? next : 0);
+    resetQuestion(); setView('study'); setSidebarOpen(false);
+  }
   function moveQuestion(next:number) { setQuestionIndex(next); resetQuestion(); }
   async function reload() {
     const [all, one] = await Promise.all([api.courses(), activeLectureId ? api.lecture(activeLectureId) : Promise.resolve(null)]);
@@ -99,10 +115,10 @@ export default function App() {
     });
   }
   async function selfAssess(value: number) {
-    if (!review) return;
+    if (!displayedReview) return;
     await perform(async () => {
-      await api.selfGrade(review.attempt_id, value);
-      setReview({...review, score:value, evaluated_by:'self_assessed', feedback:'Self-assessment recorded. Review your solution against the rubric.'});
+      await api.selfGrade(displayedReview.attempt_id, value);
+      setReview({...displayedReview, score:value, evaluated_by:'self_assessed', feedback:'Self-assessment recorded. Review your solution against the rubric.'});
       await reload();
     });
   }
@@ -198,14 +214,16 @@ export default function App() {
             <div className="study-layout"><div className="study-stages">{STAGES.map((s,i)=>{const Icon=stageIcons[s];const info=scores?.[s];return <button className={`study-stage ${stage===s?'active':''}`} key={s} onClick={()=>startStage(s)}><div className="number-icon"><Icon size={18}/></div><div><strong>{i+1}. {labels[s]}</strong><small>{info?.complete?'Completed':`${info?.graded || 0} / ${info?.total || 0} assessed`}</small></div>{info?.complete&&<CheckCircle2 className="right-check" size={17}/>}</button>})}</div>
             <section className="question-card"><div className="question-top"><div className="stage-pill">{labels[stage].toUpperCase()}</div><span>QUESTION {Math.min(questionIndex+1,activeQuestions.length)} OF {activeQuestions.length}</span></div><div className="question-progress"><span style={{width:`${activeQuestions.length?((questionIndex+1)/activeQuestions.length)*100:0}%`}}/></div>
               {revisionBlocked ? <div className="empty-question"><div className="locked-icon"><ShieldCheck size={30}/></div><h2>Revision unlocks after practice</h2><p>Complete Theory, Tests, Code, and Problems first. This final stage is an unaided assessment, so hints and answer reveals are disabled until the stage is finished.</p><button className="btn btn-primary" onClick={()=>startStage(STAGES.slice(0,4).find(s=>!scores?.[s].complete) || 'theory')}>Continue learning <ArrowRight size={17}/></button></div> : !q ? <div className="empty-question"><div className="locked-icon"><FileText size={30}/></div><h2>No questions here yet</h2><p>Upload lecture PDFs or DOCX files, then generate questions when your AI connection is configured.</p><button className="btn btn-primary" onClick={()=>setView('sources')}>Add materials</button></div> : <>
-                <div className="question-body"><h2>{q.prompt}</h2>{q.choices?.length ? <div className="answer-options">{q.choices.map((choice,i)=>{const letter=String.fromCharCode(65+i);return <button key={choice} disabled={!!review} className={`answer-choice ${answer===letter?'chosen':''}`} onClick={()=>setAnswer(letter)}><span>{letter}</span><strong>{choice.replace(/^[A-D][.)]\s*/, '')}</strong>{answer===letter&&<Check size={16}/>}</button>})}</div> : <div className="answer-writing"><label htmlFor="written-answer">Your answer {stage==='code'?'(Python)':''}</label><textarea id="written-answer" value={answer} disabled={!!review} onChange={e=>setAnswer(e.target.value)} rows={stage==='code'?11:6} spellCheck={false} placeholder={stage==='code'?'import sys\n\n# Write your solution here…':'Explain your reasoning in your own words…'} className={stage==='code'?'code-input':''}/><small>{stage==='code'?'Code is reviewed, not executed in this MVP.':'Think it through before submitting.'}</small></div>}
+                <div className="question-body"><h2>{q.prompt}</h2>{q.choices?.length ? <div className="answer-options">{q.choices.map((choice,i)=>{const letter=String.fromCharCode(65+i);return <button key={choice} disabled={!!displayedReview || (stage==='revision' && alreadySubmitted)} className={`answer-choice ${answer===letter?'chosen':''}`} onClick={()=>setAnswer(letter)}><span>{letter}</span><strong>{choice.replace(/^[A-D][.)]\s*/, '')}</strong>{answer===letter&&<Check size={16}/>}</button>})}</div> : <div className="answer-writing"><label htmlFor="written-answer">Your answer {stage==='code'?'(Python)':''}</label><textarea id="written-answer" value={answer} disabled={!!displayedReview || (stage==='revision' && alreadySubmitted)} onChange={e=>setAnswer(e.target.value)} rows={stage==='code'?11:6} spellCheck={false} placeholder={stage==='code'?'import sys\n\n# Write your solution here…':'Explain your reasoning in your own words…'} className={stage==='code'?'code-input':''}/><small>{stage==='code'?'Code is reviewed, not executed in this MVP.':'Think it through before submitting.'}</small></div>}
                 {q.source_excerpt && <div className="source-reference"><FileText size={15}/><div><strong>Lecture source reference</strong><p>{q.source_excerpt.length>260?q.source_excerpt.slice(0,260)+'…':q.source_excerpt}</p></div></div>}
                 {hint && stage!=='revision' && <div className="hint-box"><Lightbulb size={17}/><span>{hint}</span></div>}
-                {questionPrevious && !review && !(stage==='revision'&&!revisionComplete) && <div className="previous-answer"><CheckCircle2 size={16}/> Previous assessment: {questionPrevious.score===null?'awaiting self-review':`${Math.round(questionPrevious.score*100)}%`}. You can try again.</div>}
-                {review && <div className="feedback-box"><div className="feedback-title"><CheckCircle2 size={19}/><b>{stage==='revision' && !revisionComplete ? 'Answer recorded' : review.score===null ? 'Compare with the rubric' : 'Answer assessed'}</b><span>{stage==='revision'&&!revisionComplete?'Results hidden':review.score===null?'Self-review':`${Math.round(review.score*100)}%`}</span></div>
-                  {stage==='revision'&&!revisionComplete?<p>Your answer is saved. Continue to the next question; the revision assessment stays blind until you finish.</p>:<><p>{review.feedback}</p><div className="model-answer"><strong>Reference answer / grading rubric</strong><p>{review.model_answer}</p>{review.explanation&&<p className="explanation">{review.explanation}</p>}</div>{review.score===null&&<div className="self-grades"><span>How accurate was your answer?</span><button onClick={()=>void selfAssess(0)} disabled={busy}>Not yet (0%)</button><button onClick={()=>void selfAssess(.5)} disabled={busy}>Partly (50%)</button><button onClick={()=>void selfAssess(1)} disabled={busy}>Got it (100%)</button></div>}{review.evaluated_by==='ai_review_not_execution'&&<small>AI rubric review only — code was not executed.</small>}</>}
+                {questionPrevious && !displayedReview && !(stage==='revision'&&!revisionComplete) && <div className="previous-answer"><CheckCircle2 size={16}/> Previous assessment: {questionPrevious.score===null?'awaiting self-review':`${Math.round(questionPrevious.score*100)}%`}. {completedPractice ? 'Review or choose Try again.' : ''}</div>}
+                {stage==='revision' && alreadySubmitted && !revisionComplete && !displayedReview && <div className="hint-box"><ShieldCheck size={17}/><span>Answer saved and sealed. No edits or hints are allowed. Finish the remaining questions to unlock results.</span></div>}
+                {stage==='revision' && revisionComplete && completedRevisionResult && !displayedReview && <div className="feedback-box"><div className="feedback-title"><CheckCircle2 size={19}/><b>Final revision result</b><span>{Math.round((completedRevisionResult.score??0)*100)}%</span></div><p><strong>Your answer:</strong> {completedRevisionResult.user_answer}</p><p>{completedRevisionResult.feedback}</p><div className="model-answer"><strong>Reference answer / grading rubric</strong><p>{completedRevisionResult.model_answer}</p><p className="explanation">{completedRevisionResult.explanation}</p></div></div>}
+                {displayedReview && <div className="feedback-box"><div className="feedback-title"><CheckCircle2 size={19}/><b>{stage==='revision' && !revisionComplete ? 'Answer recorded' : displayedReview.score===null ? 'Compare with the rubric' : 'Answer assessed'}</b><span>{stage==='revision'&&!revisionComplete?'Results hidden':displayedReview.score===null?'Self-review':`${Math.round(displayedReview.score*100)}%`}</span></div>
+                  {stage==='revision'&&!revisionComplete?<p>Your answer is saved. Continue to the next question; the revision assessment stays blind until you finish.</p>:<><p>{displayedReview.feedback}</p><div className="model-answer"><strong>Reference answer / grading rubric</strong><p>{displayedReview.model_answer}</p>{displayedReview.explanation&&<p className="explanation">{displayedReview.explanation}</p>}</div>{displayedReview.score===null&&<div className="self-grades"><span>How accurate was your answer?</span><button onClick={()=>void selfAssess(0)} disabled={busy}>Not yet (0%)</button><button onClick={()=>void selfAssess(.5)} disabled={busy}>Partly (50%)</button><button onClick={()=>void selfAssess(1)} disabled={busy}>Got it (100%)</button></div>}{displayedReview.evaluated_by==='ai_review_not_execution'&&<small>AI rubric review only — code was not executed.</small>}</>}
                 </div>}</div>
-                <div className="question-bottom"><div className="question-bottom-left">{questionIndex>0&&<button className="btn btn-text" onClick={()=>moveQuestion(questionIndex-1)}><ArrowLeft size={16}/> Previous</button>}{stage!=='revision'&&!review&&<button className="btn btn-text" onClick={()=>void useHint()} disabled={busy}><Lightbulb size={16}/> Hint {hintCount>0?`(${hintCount})`:''}</button>}</div><div>{!review?<button className="btn btn-primary" onClick={()=>void submitAnswer()} disabled={!answer.trim()||busy}>{busy?<LoaderCircle className="spin" size={17}/>:null}Submit answer <ArrowRight size={17}/></button>:questionIndex<activeQuestions.length-1?<button className="btn btn-primary" onClick={()=>moveQuestion(questionIndex+1)}>Next question <ArrowRight size={17}/></button>:<button className="btn btn-primary" onClick={()=>{resetQuestion();setView('overview');}}>Back to dashboard <ArrowRight size={17}/></button>}</div></div>
+                <div className="question-bottom"><div className="question-bottom-left">{questionIndex>0&&<button className="btn btn-text" onClick={()=>moveQuestion(questionIndex-1)}><ArrowLeft size={16}/> Previous</button>}{stage!=='revision'&&!displayedReview&&<button className="btn btn-text" onClick={()=>void useHint()} disabled={busy}><Lightbulb size={16}/> Hint {hintCount>0?`(${hintCount})`:''}</button>}</div><div>{completedPractice && !displayedReview && !retrying && <button className="btn btn-text" onClick={()=>setRetrying(true)}>Try again</button>}{!displayedReview && !(stage==='revision' && alreadySubmitted) && (!completedPractice || retrying) ? <button className="btn btn-primary" onClick={()=>void submitAnswer()} disabled={!answer.trim()||busy}>{busy?<LoaderCircle className="spin" size={17}/>:null}Submit answer <ArrowRight size={17}/></button> : canContinue && questionIndex<activeQuestions.length-1?<button className="btn btn-primary" onClick={()=>moveQuestion(questionIndex+1)}>Next question <ArrowRight size={17}/></button>:canContinue?<button className="btn btn-primary" onClick={()=>{resetQuestion();setView('overview');}}>Back to dashboard <ArrowRight size={17}/></button>:<span className="assessment-hint">Complete self-assessment to continue</span>}</div></div>
               </>}
             </section></div>
           </>}

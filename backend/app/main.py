@@ -155,11 +155,41 @@ def lecture_detail(lecture_id: int):
             for q in questions:
                 if q["stage"] == "revision":
                     q["source_excerpt"] = ""
+        # A finished revision is read-only. Release its full review *after* all
+        # questions have been answered, including after a browser refresh.
+        # Pending written self-assessments can also resume after refresh.
+        pending_reviews = {}
+        revision_results = {}
+        latest_public = {}
+        for qid, attempt in attempts.items():
+            item = db.execute("SELECT stage, answer, explanation FROM questions WHERE id=?", (qid,)).fetchone()
+            is_revision = item["stage"] == "revision"
+            latest_public[qid] = {
+                "id": attempt["id"],
+                "score": attempt["score"] if revision_released or not is_revision else None,
+                "hints_used": attempt["hints_used"],
+                "feedback": (attempt["feedback"] if revision_released or not is_revision
+                             else "Answer saved; results sealed until revision complete."),
+                "evaluated_by": attempt["evaluated_by"] if revision_released or not is_revision else "sealed_revision",
+            }
+            if is_revision and revision_released:
+                revision_results[qid] = {
+                    "user_answer": attempt["user_answer"], "score": attempt["score"],
+                    "feedback": attempt["feedback"], "model_answer": item["answer"],
+                    "explanation": item["explanation"],
+                }
+            elif not is_revision and attempt["evaluated_by"] == "pending_self_grade":
+                pending_reviews[qid] = {
+                    "attempt_id": attempt["id"], "score": None,
+                    "feedback": attempt["feedback"], "evaluated_by": attempt["evaluated_by"],
+                    "model_answer": item["answer"], "explanation": item["explanation"],
+                    "user_answer": attempt["user_answer"],
+                }
         return {
             "lecture": dict(row), "questions": questions, "progress": progress,
-            "latest_attempts": {qid: {"id": a["id"], "score": a["score"] if revision_released or db.execute("SELECT stage FROM questions WHERE id=?", (qid,)).fetchone()["stage"] != "revision" else None, "hints_used": a["hints_used"],
-                                      "feedback": a["feedback"] if revision_released or db.execute("SELECT stage FROM questions WHERE id=?", (qid,)).fetchone()["stage"] != "revision" else "Answer saved; results sealed until revision complete.", "evaluated_by": a["evaluated_by"]}
-                                for qid, a in attempts.items()},
+            "latest_attempts": latest_public,
+            "pending_reviews": pending_reviews,
+            "revision_results": revision_results,
             "sources": [{"id": r["id"], "filename": r["filename"], "length": len(r["content"])}
                         for r in db.execute("SELECT * FROM sources WHERE lecture_id=?", (lecture_id,))],
         }
@@ -265,6 +295,8 @@ async def attempt_question(question_id: int, payload: AttemptIn):
             progress_before = lecture_progress(db, question["lecture_id"])
             if not all(progress_before["stages"][s]["complete"] for s in STAGES[:-1]):
                 raise HTTPException(409, "Finish Theory, Tests, Code and Problems before the unaided revision.")
+            if db.execute("SELECT 1 FROM attempts WHERE question_id=?", (question_id,)).fetchone():
+                raise HTTPException(409, "Revision answers are final. Continue with the remaining questions or review your completed assessment.")
 
     is_mcq = bool(json.loads(question["choices_json"]))
     if is_mcq:

@@ -172,3 +172,56 @@ def test_bulk_pdf_import_matches_catalog(tmp_path, client):
     detail = client.get('/api/lectures/2').json()
     assert len(detail['sources']) == 1
     assert all(q['source_id'] == detail['sources'][0]['id'] for q in detail['questions'])
+
+
+def _finish_practice(client):
+    """Complete written and objective sections without impersonating an AI evaluator."""
+    detail = client.get('/api/lectures/1').json()
+    for q in detail['questions']:
+        if q['stage'] == 'revision':
+            continue
+        answer = q['answer'] if 'answer' in q else ('A' if q['choices'] else 'Reasoned response')
+        attempt = client.post(f"/api/questions/{q['id']}/attempts", json={'answer': answer})
+        assert attempt.status_code == 201
+        result = attempt.json()
+        if result['score'] is None:
+            graded = client.post(f"/api/attempts/{result['attempt_id']}/self-grade", json={'score': .5})
+            assert graded.status_code == 200
+    return client.get('/api/lectures/1').json()
+
+
+def test_pending_written_review_resumes_after_refresh(client):
+    q = next(q for q in client.get('/api/lectures/1').json()['questions'] if q['stage'] == 'theory')
+    r = client.post(f"/api/questions/{q['id']}/attempts", json={'answer': 'I think true division gives float'})
+    assert r.status_code == 201 and r.json()['score'] is None
+    # A fresh page load must still have the reference rubric for explicit self-grading.
+    restored = client.get('/api/lectures/1').json()
+    pending = restored['pending_reviews'][str(q['id'])]
+    assert pending['attempt_id'] == r.json()['attempt_id']
+    assert 'division' in pending['model_answer'].lower()
+    assert pending['user_answer'] == 'I think true division gives float'
+    assert client.post(f"/api/attempts/{pending['attempt_id']}/self-grade", json={'score': .5}).status_code == 200
+    refreshed = client.get('/api/lectures/1').json()
+    assert str(q['id']) not in refreshed['pending_reviews']
+    assert refreshed['latest_attempts'][str(q['id'])]['score'] == .5
+
+
+def test_revision_cannot_be_resubmitted_and_results_unlock_at_finish(client):
+    _finish_practice(client)
+    qs = [q for q in client.get('/api/lectures/1').json()['questions'] if q['stage'] == 'revision']
+    one = client.post(f"/api/questions/{qs[0]['id']}/attempts", json={'answer':'A'})
+    assert one.status_code == 201
+    halfway = client.get('/api/lectures/1').json()
+    assert halfway['revision_results'] == {}
+    assert halfway['latest_attempts'][str(qs[0]['id'])]['score'] is None
+    assert halfway['latest_attempts'][str(qs[0]['id'])]['evaluated_by'] == 'sealed_revision'
+    assert client.post(f"/api/questions/{qs[0]['id']}/attempts", json={'answer':'B'}).status_code == 409
+    two = client.post(f"/api/questions/{qs[1]['id']}/attempts", json={'answer':'B'})
+    assert two.status_code == 201
+    completed = client.get('/api/lectures/1').json()
+    assert completed['progress']['overall'] is not None
+    assert completed['revision_results'][str(qs[0]['id'])]['model_answer'] == 'A'
+    assert completed['revision_results'][str(qs[1]['id'])]['model_answer'] == 'B'
+    assert completed['revision_results'][str(qs[0]['id'])]['user_answer'] == 'A'
+    assert client.post(f"/api/questions/{qs[1]['id']}/attempts", json={'answer':'A'}).status_code == 409
+    assert client.get('/api/lectures/1').json()['progress']['overall'] == completed['progress']['overall']
