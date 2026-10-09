@@ -1,0 +1,10 @@
+export type Stage = 'theory' | 'tests' | 'code' | 'problems' | 'revision';
+export type StageInfo = { total: number; submitted: number; graded: number; complete: boolean; unaided: boolean; score: number | null };
+export type Progress = { stages: Record<Stage, StageInfo>; overall: number | null; overall_note: string };
+export type Lecture = { id: number; course_id: number; title: string; description: string; progress: Progress };
+export type Course = { id: number; name: string; code: string; description: string; lectures: Lecture[] };
+export type Question = { id: number; lecture_id: number; stage: Stage; prompt: string; choices: string[]; source_id: number | null; source_excerpt: string; difficulty: number };
+export type AnswerReview = { id: number; score: number | null; feedback: string; hints_used: number; evaluated_by: string };
+export type LectureDetail = { lecture: Lecture; questions: Question[]; progress: Progress; latest_attempts: Record<number, AnswerReview>; sources: { id: number; filename: string; length: number }[] };
+export type AttemptResult = { attempt_id: number; score: number | null; feedback: string; evaluated_by: string; model_answer: string; explanation: string; progress: Progress };
+export const STAGES: Stage[] = ['theory', 'tests', 'code', 'problems', 'revision'];
