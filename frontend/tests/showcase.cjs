@@ -13,12 +13,12 @@ assert.throws(()=>post('/lectures/1/sources',{name:'private.pdf'}),/full applica
 let questions=lecture.questions;
 for(const q of questions.filter(q=>q.stage!=='revision')){
   const mcq=q.choices.length>0;const a=post(`/questions/${q.id}/attempts`,{answer:mcq?(q.id===1003?'B':'C'):'My considered Python answer',hints_used:0});
-  if(!mcq){assert.equal(a.score,null);assert.ok(a.model_answer);const saved=post(`/attempts/${a.attempt_id}/self-grade`,{score:1});assert.equal(saved.score,1)}
+  if(!mcq){assert.equal(a.score,null);assert.ok(a.model_answer);assert.equal(api('/lectures/1').pending_reviews[q.id].attempt_id,a.attempt_id);const saved=post(`/attempts/${a.attempt_id}/self-grade`,{score:1});assert.equal(saved.score,1)}
 }
 lecture=api('/lectures/1');assert.equal(lecture.progress.stages.theory.complete,true);assert.equal(lecture.progress.stages.problems.complete,true);assert.equal(lecture.progress.stages.revision.complete,false);
 const r1=post('/questions/1009/attempts',{answer:'A',hints_used:0});assert.equal(r1.score,null);assert.equal(r1.model_answer,'');assert.equal(api('/lectures/1').latest_attempts[1009].score,null);
 assert.throws(()=>post('/questions/1009/attempts',{answer:'A',hints_used:0}),/final/);
-const r2=post('/questions/1010/attempts',{answer:'B',hints_used:0});assert.equal(r2.score,1);lecture=api('/lectures/1');assert.equal(lecture.progress.stages.revision.complete,true);assert.ok(lecture.progress.overall!==null);assert.equal(lecture.latest_attempts[1009].score,1);
+const r2=post('/questions/1010/attempts',{answer:'B',hints_used:0});assert.equal(r2.score,1);lecture=api('/lectures/1');assert.equal(lecture.progress.stages.revision.complete,true);assert.ok(lecture.progress.overall!==null);assert.equal(lecture.latest_attempts[1009].score,1);assert.equal(lecture.revision_results[1009].model_answer,'A');assert.equal(lecture.revision_results[1010].score,1);
 assert.equal(api('/courses')[0].lectures[0].progress.overall,lecture.progress.overall);
 assert.equal(storage.size,1); // browser-local state survives the in-app navigation
 assert.throws(()=>post('/questions/1010/attempts',{answer:'A',hints_used:0}),/final/);

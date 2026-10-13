@@ -99,6 +99,8 @@ function detail(lectureId:number,state:DemoData): LectureDetail {
     ...q,source_excerpt:q.stage==='revision'&&!revisionReleased?'':q.source_excerpt,
   }));
   const attempts: LectureDetail['latest_attempts']={};
+  const pending_reviews: LectureDetail['pending_reviews']={};
+  const revision_results: LectureDetail['revision_results']={};
   for (const q of questions) {
     const a=latest(q.id,state);
     if (a) {
@@ -106,9 +108,19 @@ function detail(lectureId:number,state:DemoData): LectureDetail {
       attempts[q.id]={id:a.id,score:sealed?null:a.score,hints_used:a.hints_used,
         feedback:sealed?'Answer saved; results sealed until revision complete.':a.feedback,
         evaluated_by:sealed?'sealed_revision':a.evaluated_by};
+      if (q.stage==='revision' && revisionReleased) {
+        const original=lookup(q.id);
+        revision_results[q.id]={user_answer:a.answer,score:a.score,feedback:a.feedback,
+          model_answer:original.answer,explanation:original.explanation};
+      } else if(q.stage!=='revision' && a.evaluated_by==='pending_self_grade'){
+        const original=lookup(q.id);
+        pending_reviews[q.id]={attempt_id:a.id,score:null,feedback:a.feedback,
+          evaluated_by:a.evaluated_by,model_answer:original.answer,
+          explanation:original.explanation,user_answer:a.answer};
+      }
     }
   }
-  return {lecture,questions,progress,latest_attempts:attempts,sources:[]};
+  return {lecture,questions,progress,latest_attempts:attempts,pending_reviews,revision_results,sources:[]};
 }
 function validateMcq(answer:string) {
   const val=answer.trim().toUpperCase();
