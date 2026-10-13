@@ -1,6 +1,14 @@
 import type { Course, LectureDetail, AttemptResult } from './types';
+import { showcaseRequest } from './demoApi';
+
+// Skycastle provides static hosting, not our Python/SQLite backend. Explicit demo mode
+// and Skycastle hostnames use the real question bank with browser-local persistence.
+export const isShowcaseMode = import.meta.env.VITE_SHOWCASE_MODE === 'true'
+  || /(^|\.)users\.skycastle\.ai$/.test(window.location.hostname)
+  || new URLSearchParams(window.location.search).get('demo') === '1';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  if (isShowcaseMode) return showcaseRequest<T>(path, init);
   let r: Response;
   try { r = await fetch(`/api${path}`, init); }
   catch { throw new Error('Cannot reach the backend. Start FastAPI on localhost:8000.'); }
