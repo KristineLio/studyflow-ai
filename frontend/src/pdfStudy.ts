@@ -103,6 +103,15 @@ const terms: Array<[RegExp,string]> = [
   [/\bvariables?\b/i,'variables'],
 ];
 export function findTopic(text:string):string {
+  // Introductory slides describe Python's characteristics, not class mechanics.
+  // "object-oriented" alone is not evidence that classes/objects are explained.
+  const normalized=text.replace(/\s+/g,' ');
+  if(/\b(?:the\s+)?python\s+language\s+is\s*:/i.test(normalized)
+      && /\b(?:general\s+purpose|high[ -]level|readability)\b/i.test(normalized))
+    return 'Python language characteristics';
+  if(/\bobject[ -]oriented\b/i.test(normalized) && !/\b(?:classes?|instances?|class\s+definitions?)\b/i.test(normalized))
+    return 'object-oriented programming';
+
   if (/\blists?\b.*\btuples?\b/i.test(text.replace(/\n/g,' ')) && /\b(?:mutable|immutable|main difference)\b/i.test(text))return 'lists and tuples';
   const lines=text.split('\n').map(x=>x.trim()).filter(Boolean);
   const first=lines.find(line=>line.length>=4&&line.length<=62&&!commonHeading.test(line)
@@ -156,12 +165,17 @@ function makeQuestion(stage:Stage,e:Evidence,track:Plan['track']):string {
   const topic=e.topic;
   const specificallyMutability=topic==='lists and tuples'&&/\bmutable\b|\bimmutable\b|\bmain difference\b/i.test(e.text);
   const specificallyNegativeIndex=topic==='indexing'&&/\bnegative\s+index|\b-1\b/.test(e.text);
+  const pythonCharacteristics=topic==='Python language characteristics';
   // Ground list-method questions in the actual duplicate-value example.
   // Only mention the literal 'bee' example when the uploaded slide contains it.
   const removeFirst=topic==='methods'&&/\bremove\b/i.test(e.text)
     &&/\bfirst\s+occurrence\b/i.test(e.text);
   const beeExample=removeFirst&&/h\s*=\s*\[[^\]]*['"]bee['"][^\]]*['"]bee['"]/i.test(e.text)
     &&/h\.remove\(\s*['"]bee['"]\s*\)/i.test(e.text);
+  if(stage==='theory'&&pythonCharacteristics)
+    return 'According to this slide, what are Python’s main characteristics, and why does its emphasis on readable code matter?';
+  if(stage==='tests'&&pythonCharacteristics)
+    return 'From memory, name three characteristics of Python listed in the lecture. Which one is linked to writing algorithms with less code?';
   if(stage==='theory')return specificallyMutability
     ? 'How do Python lists and tuples differ when you need to change an existing element? Explain using the lecture’s rule.'
     : specificallyNegativeIndex?'How does positive versus negative indexing work in sequences? Explain with an example.'

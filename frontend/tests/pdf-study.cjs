@@ -41,6 +41,24 @@ assert.equal(p.questions.length,10);
 assert.equal(p.questions[0].source.page,3);
 assert.match(p.questions[0].question,/lists and tuples/i);
 assert(!p.questions.some(q=>q.question.includes('central concept on')));
+const introSlide={
+  file:'lecture1-english-2020.pdf',
+  page:2,
+  text:[
+    'The Python language is:',
+    'General purpose',
+    'High Level',
+    'Based on the philosophy of code readability. The syntax allows algorithms to be implemented with less code than C for example.',
+    'Fully Object-oriented'
+  ].join('\n')
+};
+assert.equal(x.findTopic(introSlide.text),'Python language characteristics');
+const introPlan=x.createPlan('Python intro','programming',[introSlide]);
+assert(introPlan.questions.filter(q=>q.stage==='theory').every(q=>q.question.includes('characteristics')));
+assert(introPlan.questions.filter(q=>q.stage==='tests').every(q=>q.question.includes('characteristics')));
+assert(introPlan.questions.every(q=>!q.question.includes('classes and objects')));
+assert.equal(x.findTopic('Python uses an object-oriented design which is a useful approach.'),'object-oriented programming');
+
 assert(p.questions.filter(q=>q.stage==='code').some(q=>q.question.includes('>>>')));
 assert(p.questions.every(q=>q.source.page>=3));
 const methodSlide={file:'lecture2.pdf',page:39,text:[
