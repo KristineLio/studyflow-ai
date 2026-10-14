@@ -43,6 +43,17 @@ assert.match(p.questions[0].question,/lists and tuples/i);
 assert(!p.questions.some(q=>q.question.includes('central concept on')));
 assert(p.questions.filter(q=>q.stage==='code').some(q=>q.question.includes('>>>')));
 assert(p.questions.every(q=>q.source.page>=3));
+const methodSlide={file:'lecture2.pdf',page:39,text:[
+ 'Methods','remove','The remove method is used to remove the first occurrence in a list.',
+ ">>> h=['two','bee','or','not','two','bee']",
+ ">>> h.remove('bee')",
+ "['two','or','not','two','bee']"
+].join('\n')};
+const methodPlan=x.createPlan('Methods','general',[methodSlide]);
+assert.equal(x.selectEvidence([methodSlide])[0].topic,'methods');
+assert(methodPlan.questions.filter(q=>q.stage==='code')
+  .every(q=>q.question.includes("h.remove('bee')")),'Apply must use the real example even in General mode');
+
 assert.equal(x.revisionUnlocked(p),false);
 assert.equal(x.finalScore(p),null);
 for(const q of p.questions.filter(q=>q.stage!=='revision'))p.answers[q.id]={text:'My response',hints:1,score:1};
