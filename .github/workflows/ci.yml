@@ -31,4 +31,5 @@ jobs:
           node-version: '22'
       - run: npm install --no-audit --no-fund
       - run: npm run test:showcase
+      - run: npm run test:pdf
       - run: VITE_SHOWCASE_MODE=true npm run build

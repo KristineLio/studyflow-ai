@@ -7,12 +7,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test:showcase": "node tests/showcase.cjs"
+    "test:showcase": "node tests/showcase.cjs",
+    "test:pdf": "node tests/pdf-study.cjs"
   },
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "lucide-react": "^0.468.0"
+    "lucide-react": "^0.468.0",
+    "pdfjs-dist": "^4.10.38"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
