@@ -7,8 +7,7 @@ import {
 } from 'lucide-react';
 import { api, isShowcaseMode } from './api';
 import { resetShowcase } from './demoApi';
-import UploadedStudy from './UploadedStudy';
-import './personal.css';
+import PdfStudy from './PdfStudy';
 import type { AttemptResult, Course, LectureDetail, Stage } from './types';
 import { STAGES } from './types';
 
@@ -206,7 +205,7 @@ export default function App() {
         {isShowcaseMode && <div className="flash flash-ok" role="status"><ShieldCheck size={18}/><span><strong>Private PDF study or sample Python course.</strong> Extract real PDF passages in your browser and self-assess your work. No AI, code execution, or account sync.</span><button className="btn btn-outline btn-sm" onClick={()=>{if(window.confirm('Reset your local StudyFlow demo progress?')){resetShowcase();window.location.reload();}}}>Reset demo</button></div>}
         {error && <div className="flash flash-error"><AlertTriangle size={17}/><span>{error}</span><button aria-label="Dismiss" onClick={()=>setError('')}><X size={16}/></button></div>}
         {notice && <div className="flash flash-ok"><Check size={17}/><span>{notice}</span><button aria-label="Dismiss" onClick={()=>setNotice('')}><X size={16}/></button></div>}
-        {view==='upload' ? <UploadedStudy onTrySample={()=>setView('overview')}/> : !detail ? <section className="empty-screen"><div className="empty-emblem"><BookOpen size={32}/></div><h1>Start with a lecture.</h1><p>Create a course, then add your first lecture and upload the professor's materials.</p><button className="btn btn-primary" onClick={()=>setModal(activeCourseId?'lecture':'course')}><Plus size={18}/>{activeCourseId?'Add lecture':'Create course'}</button></section> : <>
+        {view==='upload' ? <PdfStudy trySample={()=>setView('overview')}/> : !detail ? <section className="empty-screen"><div className="empty-emblem"><BookOpen size={32}/></div><h1>Start with a lecture.</h1><p>Create a course, then add your first lecture and upload the professor's materials.</p><button className="btn btn-primary" onClick={()=>setModal(activeCourseId?'lecture':'course')}><Plus size={18}/>{activeCourseId?'Add lecture':'Create course'}</button></section> : <>
           {view==='overview' && <>
             <div className="hero"><div className="hero-copy"><div className="eyebrow"><Sparkles size={14}/> YOUR PERSONAL LEARNING SPACE</div><h1>Learn it. <em>Prove it.</em></h1><p>Learn deeply, practice deliberately, and walk into your exam knowing what you actually understand.</p><div className="hero-actions"><button className="btn btn-light" onClick={()=>startStage('theory')}>Continue studying <ArrowRight size={17}/></button><button className="btn btn-ghost-light" onClick={()=>setView(isShowcaseMode?'upload':'sources')}><UploadCloud size={17}/> {isShowcaseMode?'Study my PDFs':'Add lecture notes'}</button></div></div><div className="hero-art" aria-hidden="true"><div className="art-orbit art-orbit-1"/><div className="art-orbit art-orbit-2"/><div className="art-center"><BookOpen size={41} strokeWidth={1.5}/></div><div className="art-spark art-spark-1"><Sparkles size={20}/></div><div className="art-spark art-spark-2"><Check size={20}/></div></div></div>
             <div className="section-head"><div><div className="page-kicker">YOUR COURSE</div><h2>{currentCourse?.name || 'Python Programming'}</h2><p>{detail.lecture.title} · {detail.questions.length ? `${detail.questions.length} practice questions` : 'Add course materials to begin'}</p></div><button className="btn btn-outline" onClick={()=>setView('sources')}><FileText size={17}/> Materials</button></div>
