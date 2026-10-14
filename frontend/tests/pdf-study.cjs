@@ -1,8 +1,8 @@
 const fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript'),assert=require('node:assert/strict');
 const source=fs.readFileSync(__dirname+'/../src/pdfStudy.ts','utf8');
 const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}});
-const storage=new Map(), exports={};
-const context={exports,require:(id)=>id==='pdfjs-dist'?{GlobalWorkerOptions:{},getDocument:()=>({promise:Promise.resolve({numPages:1,getPage:async()=>({getTextContent:async()=>({items:[{str:'This is a long readable lecture document explaining concepts and exercises in detail. Repeat testing and examples can be useful in practice, and this additional passage makes the source sufficiently long for accurate text-extraction tests.'}]}),cleanup:()=>{}}),destroy:async()=>{}})})}):'worker.js',localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)}};
+const storage=new Map(), moduleExports={};
+const context={exports:moduleExports,require:(id)=>id==='pdfjs-dist'?{GlobalWorkerOptions:{},getDocument:()=>({promise:Promise.resolve({numPages:1,getPage:async()=>({getTextContent:async()=>({items:[{str:'This is a long readable lecture document explaining concepts and exercises in detail. Repeat testing and examples can be useful in practice, and this additional passage makes the source sufficiently long for accurate text-extraction tests.'}]}),cleanup:()=>{}}),destroy:async()=>{}})})}):'worker.js',localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)}};
 vm.runInNewContext(compiled.outputText,context);
 const api=context.exports;
 const pages=Array.from({length:15},(_,i)=>({file:'private-notes.pdf',page:i+1,text:'This lecture page describes concept '+i+' and its practical implications. It contains an explanation of rules and patterns that students must understand. We can provide examples and counterexamples to demonstrate how it works.'}));
