@@ -1,6 +1,16 @@
-# StudyFlow — Python Programming
+# StudyFlow — Upload, study, remember
 
 **Learn it. Prove it.** A five-stage, lecture-grounded revision workspace built with **React + TypeScript** and **FastAPI + SQLite**. Designed as a single-student MVP for real university study, then to be showcased via Skycastle VibeFlow.
+
+## Skycastle: bring your own PDFs (browser-only prototype)
+
+The Skycastle experience starts with **Study my PDFs** instead of requiring the Python sample course. Visitors can select up to **five text-based PDFs** (max 12 MB and 100 pages each), name a course, and choose General or Programming material.
+
+PDF.js extracts selectable text **in their browser**. StudyFlow creates **ten source-linked prompts** across Theory → Recall → Apply/Code → Problems → Revision. Visitors answer, compare their work with short extracted passages, and explicitly **self-assess**. The final revision keeps sources sealed until both answers are submitted and prevents a final self-assessed score before all five stages are reviewed.
+
+Only selected text excerpts and answers are saved in the visitor's own localStorage, not the original PDF bytes. There is no server upload or account sync in this mode. This is **not AI question generation or automatic grading**: the prompts are structured recall/application tasks and scoring is user-reported. Image-only PDFs need OCR. The original **Python Programming** question bank remains available as a sample.
+
+Build the self-contained showcase with `cd frontend && npm install && VITE_SHOWCASE_MODE=true npm run build`. See [SKYCASTLE_DEPLOY.md](SKYCASTLE_DEPLOY.md).
 
 ## What works in V1
 
