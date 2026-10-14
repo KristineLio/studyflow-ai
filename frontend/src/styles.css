@@ -66,3 +66,8 @@
 .pdf-complete p{font-size:13px;margin:5px 0}
 .pdf-privacy{display:flex;align-items:center;gap:7px;font-size:12px;color:#78829a;margin-top:22px}
 @media(max-width:900px){.pdf-layout{grid-template-columns:1fr}.pdf-panel{padding:21px}.pdf-welcome{padding:26px}.pdf-plan-head{flex-direction:column}}
+
+/* Readable source grounding in PDF-first study */
+.pdf-topic{display:inline-flex;padding:6px 10px;background:#eeecff;color:#5240a9;border-radius:7px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:0 0 10px}
+.pdf-code-excerpt{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#1c253c;color:#f7f8fc;border-radius:11px;padding:18px 20px;font-size:13px;line-height:1.65;max-width:100%;overflow-x:auto;margin:4px 0 20px}
+.pdf-source-text{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0;color:#394360;max-height:420px;overflow-y:auto}

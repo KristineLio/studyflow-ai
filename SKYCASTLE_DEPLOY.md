@@ -22,7 +22,7 @@ The previous Skycastle link `/12724/#/limits` only displayed a static import rep
 
 - Visitors select up to five PDF files, maximum 12 MB and 100 pages per file.
 - The browser extracts PDF text using PDF.js. No PDF bytes are uploaded to Skycastle or any API.
-- StudyFlow derives ten structured source-linked recall/application prompts from the text and gives page references.
+- StudyFlow skips cover/contents pages, identifies topics from teaching passages, and derives ten source-linked, rule-based prompts. Where the source includes Python code, the practice stage shows the original extracted example. Page numbers refer to the uploaded PDFs. Uploaded PDFs must be reprocessed to replace older generic prompts.
 - The learner writes and self-assesses answers against short source passages. Revision stays locked until the first four stages are completed, and the final score appears only after all five are assessed.
 - The application saves **selected excerpts and answers** in browser localStorage. The original PDF bytes are not stored.
 - This is **not live AI** or automatic correctness evaluation; scanned/image-only PDFs require OCR.
