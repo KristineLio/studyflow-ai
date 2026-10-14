@@ -156,6 +156,12 @@ function makeQuestion(stage:Stage,e:Evidence,track:Plan['track']):string {
   const topic=e.topic;
   const specificallyMutability=topic==='lists and tuples'&&/\bmutable\b|\bimmutable\b|\bmain difference\b/i.test(e.text);
   const specificallyNegativeIndex=topic==='indexing'&&/\bnegative\s+index|\b-1\b/.test(e.text);
+  // Ground list-method questions in the actual duplicate-value example.
+  // Only mention the literal 'bee' example when the uploaded slide contains it.
+  const removeFirst=topic==='methods'&&/\bremove\b/i.test(e.text)
+    &&/\bfirst\s+occurrence\b/i.test(e.text);
+  const beeExample=removeFirst&&/h\s*=\s*\[[^\]]*['"]bee['"][^\]]*['"]bee['"]/i.test(e.text)
+    &&/h\.remove\(\s*['"]bee['"]\s*\)/i.test(e.text);
   if(stage==='theory')return specificallyMutability
     ? 'How do Python lists and tuples differ when you need to change an existing element? Explain using the lecture’s rule.'
     : specificallyNegativeIndex?'How does positive versus negative indexing work in sequences? Explain with an example.'
@@ -165,10 +171,13 @@ function makeQuestion(stage:Stage,e:Evidence,track:Plan['track']):string {
     : specificallyNegativeIndex?'In Python, how do you use a negative index to reach the last element? Explain your answer.'
     : 'Without looking at the slide, recall two precise facts or conditions about '+topic+'. How would you check that each is correct?';
   if(stage==='code'){
-    if(track==='programming')return e.code
-      ? 'Analyze this code example from the lecture about '+topic+'. Describe the result and write one modification that demonstrates the same rule.\n\n'+e.code
-      : 'Write a short Python example that demonstrates '+topic+'. State the expected output and justify it using the lecture.';
-    return 'Apply the concept of '+topic+' to a specific new example. Work through the steps and explain your reasoning.';
+    if(beeExample)return "Given h = ['two', 'bee', 'or', 'not', 'two', 'bee'], predict the contents of h after h.remove('bee'). Explain why one 'bee' remains, and write one further Python statement that removes it.";
+    if(removeFirst)return 'A Python list contains the same value twice. Show a short list, call .remove(value), predict the result, and explain whether one match or all matches disappear.';
+    // When the lecture contains an actual example, both course modes should
+    // practice with it rather than offering an underspecified "apply" prompt.
+    if(e.code)return 'Using this code example from the lecture about '+topic+', predict what it produces and explain why. Then change one input or operation and explain what would change.\n\n'+e.code;
+    if(track==='programming')return 'Write a short Python example that demonstrates '+topic+'. State the expected output and justify it using the lecture.';
+    return 'Construct a small, specific example of '+topic+' from the lecture. Show the steps, what result you expect, and why.';
   }
   if(stage==='problems')return 'Imagine a student misunderstands '+topic+'. Describe a concrete mistake they might make, correct it using the lecture, and explain your reasoning.';
   return 'Unaided revision: explain '+topic+' accurately from memory. Give an original example and identify a limitation or exception.';
